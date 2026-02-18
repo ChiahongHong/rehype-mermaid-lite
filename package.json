@@ -10,7 +10,16 @@
     "astro",
     "remark"
   ],
+  "author": "Chiahong Hong",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChiahongHong/rehype-mermaid-lite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChiahongHong/rehype-mermaid-lite/issues"
+  },
+  "homepage": "https://github.com/ChiahongHong/rehype-mermaid-lite#readme",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +36,8 @@
     "build": "tsc",
     "format": "prettier --write .",
     "test": "vitest run",
-    "dev:test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -36,6 +46,7 @@
   "devDependencies": {
     "@types/hast": "^3.0.0",
     "@types/unist": "^3.0.0",
+    "@vitest/coverage-v8": "^4.0.0",
     "prettier": "^3.0.0",
     "rehype-stringify": "^10.0.0",
     "remark-parse": "^11.0.0",

@@ -69,4 +69,129 @@ console.log("hi")
     expect(html).toContain("language-js")
     expect(html).not.toContain('class="mermaid"')
   })
+
+  it("exports rehypeMermaidLite as a named export", async () => {
+    const { rehypeMermaidLite: named } = await import("../src/index")
+    expect(named).toBeDefined()
+    expect(typeof named).toBe("function")
+  })
+
+  it("does not modify plain text without code blocks", async () => {
+    const input = "Hello, world!"
+
+    const file = await unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeMermaidLite)
+      .use(rehypeStringify)
+      .process(input)
+
+    const html = String(file)
+
+    expect(html).toContain("Hello, world!")
+    expect(html).not.toContain("mermaid")
+    expect(html).not.toContain("<pre")
+  })
+
+  it("transforms multi-line mermaid diagrams correctly", async () => {
+    const input = `
+\`\`\`mermaid
+sequenceDiagram
+    Alice->>Bob: Hello Bob
+    Bob-->>Alice: Hi Alice
+    Alice->>Bob: How are you?
+\`\`\`
+`
+
+    const file = await unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeMermaidLite)
+      .use(rehypeStringify)
+      .process(input)
+
+    const html = String(file)
+
+    expect(html).toContain('<pre class="mermaid">')
+    expect(html).toContain("sequenceDiagram")
+    expect(html).toContain("Alice")
+    expect(html).not.toContain("language-mermaid")
+  })
+
+  it("transforms multiple mermaid blocks in the same document", async () => {
+    const input = `
+\`\`\`mermaid
+graph TD
+A --> B
+\`\`\`
+
+Some text between.
+
+\`\`\`mermaid
+pie
+"A" : 40
+"B" : 60
+\`\`\`
+`
+
+    const file = await unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeMermaidLite)
+      .use(rehypeStringify)
+      .process(input)
+
+    const html = String(file)
+
+    const matches = html.match(/<pre class="mermaid">/g)
+    expect(matches).toHaveLength(2)
+    expect(html).toContain("graph TD")
+    expect(html).toContain("pie")
+  })
+
+  it("transforms mermaid blocks while preserving other code blocks", async () => {
+    const input = `
+\`\`\`mermaid
+graph TD
+A --> B
+\`\`\`
+
+\`\`\`js
+console.log("hello")
+\`\`\`
+`
+
+    const file = await unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeMermaidLite)
+      .use(rehypeStringify)
+      .process(input)
+
+    const html = String(file)
+
+    expect(html).toContain('<pre class="mermaid">')
+    expect(html).toContain("language-js")
+    expect(html).toContain("graph TD")
+    expect(html).toContain("console.log")
+  })
+
+  it("handles empty mermaid code blocks", async () => {
+    const input = `
+\`\`\`mermaid
+\`\`\`
+`
+
+    const file = await unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeMermaidLite)
+      .use(rehypeStringify)
+      .process(input)
+
+    const html = String(file)
+
+    expect(html).toContain('<pre class="mermaid">')
+    expect(html).not.toContain("language-mermaid")
+  })
 })

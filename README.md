@@ -1,12 +1,35 @@
 # rehype-mermaid-lite
 
-A lightweight rehype plugin that transforms mermaid code blocks into:
+[![npm version](https://img.shields.io/npm/v/rehype-mermaid-lite)](https://www.npmjs.com/package/rehype-mermaid-lite)
+[![CI](https://github.com/ChiahongHong/rehype-mermaid-lite/actions/workflows/ci.yaml/badge.svg)](https://github.com/ChiahongHong/rehype-mermaid-lite/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/ChiahongHong/rehype-mermaid-lite/branch/main/graph/badge.svg)](https://codecov.io/gh/ChiahongHong/rehype-mermaid-lite)
+[![license](https://img.shields.io/npm/l/rehype-mermaid-lite)](LICENSE)
+
+A lightweight [rehype](https://github.com/rehypejs/rehype) plugin that transforms Mermaid code blocks into `<pre class="mermaid">` elements for **client-side rendering**: no Playwright, no build-time overhead.
+
+## Why?
+
+Most Mermaid rehype/remark plugins render diagrams at build time using headless browsers such as Playwright. This adds heavy dependencies and slows down builds. If you prefer to let the browser handle rendering (via the official [Mermaid library](https://mermaid.js.org/)), this plugin simply rewrites the code blocks so Mermaid can pick them up at runtime.
+
+### Before
 
 ```html
-<pre class="mermaid">...</pre>
+<pre>
+  <code class="language-mermaid">
+    graph TD
+    A --> B
+  </code>
+</pre>
 ```
 
-Designed for client-side Mermaid rendering.
+### After
+
+```html
+<pre class="mermaid">
+  graph TD
+  A --> B
+</pre>
+```
 
 ## Installation
 
@@ -16,9 +39,10 @@ npm install rehype-mermaid-lite
 
 ## Usage
 
-### With Astro
+### Astro
 
-```ts
+```js
+// astro.config.mjs
 import rehypeMermaidLite from "rehype-mermaid-lite"
 
 export default defineConfig({
@@ -31,9 +55,9 @@ export default defineConfig({
 })
 ```
 
-### With unified
+### unified
 
-```ts
+```js
 import { unified } from "unified"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
@@ -47,9 +71,9 @@ const processor = unified()
   .use(rehypeStringify)
 ```
 
-## Client-side Mermaid Setup
+## Client-Side Mermaid Setup
 
-After HTML is generated, load Mermaid in the browser:
+After the HTML is generated, initialize Mermaid in the browser:
 
 ```ts
 import mermaid from "mermaid"
@@ -58,7 +82,7 @@ mermaid.initialize({ startOnLoad: false })
 await mermaid.run()
 ```
 
-Or via CDN:
+Or load it via CDN:
 
 ```html
 <script type="module">
@@ -68,28 +92,16 @@ Or via CDN:
 </script>
 ```
 
-## Example
+## API
 
-Markdown:
-
-````md
-```mermaid
-graph TD
-A --> B
+```ts
+import rehypeMermaidLite from "rehype-mermaid-lite"
 ```
-````
 
-will be transformed into:
+The default export is a [unified](https://github.com/unifiedjs/unified) plugin. It takes no options.
 
-```html
-<pre class="mermaid">
-  graph TD
-  A --> B
-</pre>
-```
+The plugin walks the hast tree looking for `<pre><code class="language-mermaid">` nodes and replaces them with `<pre class="mermaid">`, preserving the text content for client-side Mermaid rendering.
 
 ## License
 
-MIT License
-
-Copyright (c) 2026 Chiahong Hong
+[MIT](LICENSE) © Chiahong Hong
